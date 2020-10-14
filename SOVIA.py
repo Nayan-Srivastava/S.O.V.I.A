@@ -89,9 +89,10 @@ def sendmail(to,content):
     server=smtplib.SMTP('smtp.gmail.com',587)
     server.ehlo()
     server.starttls()#to send email
-    server.login("your email id","your password")
-    server.sendmail('your email id',to,content)
+    server.login("voiceassistant846@gmail.com","jarvis@123")
+    server.sendmail('voiceassistant846@gmail.com',to,content)
     server.close()
+
 
 # function to take screenshot
 
@@ -150,7 +151,7 @@ def features():
 #Function to answer questions
 def answer():
     question =query
-    app_id = 'enter your wolfarm API'
+    app_id = '7WP4V3-7T4GPQX6EQ'
     client = wolframalpha.Client(app_id)
     res = client.query(question)
     answer = next(res.results).text
@@ -228,6 +229,8 @@ def weather():
         if "yes" or "weather forecast" in cmd:
             City = city_name
             forecast(City)
+        elif "no" in cmd:
+            speak("ok")
 
     else:
         print(" City Not Found ")
@@ -351,5 +354,5 @@ if __name__ == '__main__':
             features()
         elif 'what' in query:
             answer()
-        elif 'weather report' in query:
+        elif 'weather' in query:
             weather()
