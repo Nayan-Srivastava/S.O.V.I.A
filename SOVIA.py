@@ -23,7 +23,7 @@ converter = pyttsx3.init()
 # Things to say
 # Sets speed percent
 # Can be more than 100
-converter.setProperty('rate', 140)
+# converter.setProperty('rate', 140)
 # Set volume 0-1
 converter.setProperty('volume', 1)
 
@@ -79,7 +79,7 @@ def takecommand():
 
     except Exception as e:
         print(e)
-        speak("Sorry I didn't get that can you please repeat")
+        # speak("Sorry I didn't get that can you please repeat")
         return "None"
     return query
 
@@ -356,3 +356,22 @@ if __name__ == '__main__':
             answer()
         elif 'weather' in query:
             weather()
+        else:
+            query = query
+            speak('Searching...')
+            try:
+                try:
+                    res = client.query(query)
+                    results = next(res.results).text
+                    speak('WOLFRAM-ALPHA says - ')
+                    speak('Got it.')
+                    speak(results)
+
+                except:
+                    results = wikipedia.summary(query, sentences=2)
+                    speak('Got it.')
+                    speak('WIKIPEDIA says - ')
+                    speak(results)
+
+            except:
+                wb.open('www.google.com')
