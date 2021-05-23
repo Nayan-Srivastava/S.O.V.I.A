@@ -357,9 +357,10 @@ if __name__ == '__main__':
             answer()
         elif 'weather' in query:
             weather()
-        elif 'play games' in query:
+        elif 'game' in query:
             
-            speak("three types of games you can play, first is key operated games in which you can play flappy bird and snake game,second is voice based games in which you can play chess and third is motion detection game in which you can play dinasore game. so which one you want to play..first..Second or third ")
+            # speak("three types of games you can play, first is key operated games in which you can play flappy bird and snake game,second is voice based games in which you can play chess and third is motion detection game in which you can play dinasore game. so which one you want to play..first..Second or third ")
+            speak("1 2 or 3")
             qry=takecommand().lower()
             if 'first' in qry:
                 speak("flappy bird or snake game")
@@ -369,9 +370,10 @@ if __name__ == '__main__':
 
         else:
             query = query
-            speak('Searching...')
+            
             try:
                 try:
+                    speak('Searching...')
                     res = client.query(query)
                     results = next(res.results).text
                     speak('WOLFRAM-ALPHA says - ')
@@ -379,10 +381,11 @@ if __name__ == '__main__':
                     speak(results)
 
                 except:
+                    speak('Searching...')
                     results = wikipedia.summary(query, sentences=2)
                     speak('Got it.')
                     speak('WIKIPEDIA says - ')
                     speak(results)
 
             except:
-                wb.open('www.google.com')
+                speak("speaks sir")
