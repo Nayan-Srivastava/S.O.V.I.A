@@ -13,6 +13,7 @@ import requests
 import json
 import subprocess
 import wolframalpha
+import FLAPPY_BIRD
 
 engine=pyttsx3.init()
 voices=engine.getProperty('voices')
@@ -356,6 +357,16 @@ if __name__ == '__main__':
             answer()
         elif 'weather' in query:
             weather()
+        elif 'play games' in query:
+            
+            speak("three types of games you can play, first is key operated games in which you can play flappy bird and snake game,second is voice based games in which you can play chess and third is motion detection game in which you can play dinasore game. so which one you want to play..first..Second or third ")
+            qry=takecommand().lower()
+            if 'first' in qry:
+                speak("flappy bird or snake game")
+                inp=takecommand().lower()
+                if 'flappy bird' in inp:
+                    FLAPPY_BIRD.flappy_bird()
+
         else:
             query = query
             speak('Searching...')
