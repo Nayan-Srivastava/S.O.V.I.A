@@ -19,7 +19,7 @@ def snakegame():
     go=pygame.image.load("gameover.jpg")
     go=pygame.transform.scale(go,(screen_width,screen_height)).convert_alpha()
 
-    pygame.display.set_caption("Snakes with Vanchhita")
+    pygame.display.set_caption("Snakes by S.O.V.I.A.")
 
     pygame.display.update()
 
@@ -42,7 +42,7 @@ def snakegame():
         while not exit_game:
             gameWindow.fill(white)
             gameWindow.blit(home,(0,0))
-            text_score("Welcome to snakes",white,260,250)
+            text_score("Welcome to snake game",white,260,250)
             text_score("Press Space Bar To Play", white, 230, 290)
             for event in pygame.event.get():
                 if event.type==pygame.QUIT:
