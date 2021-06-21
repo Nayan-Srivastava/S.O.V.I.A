@@ -379,7 +379,7 @@ if __name__ == '__main__':
 #*************************************************************************************************************************************#
 
 
-            if 'second' in qry:
+            if 'two' or '2' in qry:
                 speak("Do you want to play chess")
                 inp=takecommand().lower()
                 if 'yes' in inp:
