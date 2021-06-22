@@ -350,6 +350,9 @@ if __name__ == '__main__':
         elif 'photoshop' in query:
             speak("Opening photoshop")
             subprocess.Popen("C:\\Program Files (x86)\\Adobe\\Photoshop 7.0\\Photoshop.exe")
+        elif 'paint' in query: 
+            speak("Opening Paint")
+            subprocess.Popen("C:\\Windows\\System32\\mspaint.exe")
         elif 'what can you do' in query:
             speak("I can...")
             features()
@@ -2839,10 +2842,9 @@ if __name__ == '__main__':
 
         else:
             query = query
-            
+            speak("Searching....")
             try:
                 try:
-                    speak('Searching...')
                     res = client.query(query)
                     results = next(res.results).text
                     speak('WOLFRAM-ALPHA says - ')
@@ -2850,7 +2852,6 @@ if __name__ == '__main__':
                     speak(results)
 
                 except:
-                    speak('Searching...')
                     results = wikipedia.summary(query, sentences=2)
                     speak('Got it.')
                     speak('WIKIPEDIA says - ')
