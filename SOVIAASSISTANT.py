@@ -1,25 +1,48 @@
+from SOVIA import takecommand
+from tkinter import *
+import PIL.Image, PIL.ImageTk
 import pyttsx3
 import datetime
 import speech_recognition as sr
 import wikipedia
+import webbrowser
+import random
 import smtplib
-import webbrowser as wb
-import os
 import pyautogui
 import psutil
 import pyjokes
-import random
 import requests
 import json
 import subprocess
 import wolframalpha
 import snakeGame
-import yagmail
+import pygame #Game library
+from pygame.locals import * #For useful variables..for eg QUIT
+import copy #Library used to make exact copies of lists.
+import pickle #Library used to store dictionaries in a text file and read them from text files.
+import random #Used for making random selections
+from collections import defaultdict #Used for giving dictionary values default data types.
+from collections import Counter #For counting elements in a list effieciently.
+import threading #To allow for AI to think simultaneously while the GUI is coloring the board.
+import time
+import cv2
+import numpy as np
+import joblib
+import pygame
+from sys import exit
+# from random import randrange, choice
+import os
 import tkinter as tk
 
-engine=pyttsx3.init()
-voices=engine.getProperty('voices')
-engine.setProperty('voice',voices[1].id)
+
+
+#import Roman
+
+#numbers = {'hundred': 100, 'thousand': 1000, 'lakh': 100000}
+#a = {'name': 'your email'}
+engine = pyttsx3.init('sapi5')
+voices = engine.getProperty('voices')
+engine.setProperty('voice', voices[1].id)
 # Initialize the converter
 converter = pyttsx3.init()
 # Set properties before adding
@@ -30,94 +53,106 @@ converter = pyttsx3.init()
 # Set volume 0-1
 converter.setProperty('volume', 1)
 
+window = Tk()
+#window.iconbitmap(r'Aicon.ico')
+
+global var
+global var1
+
+var = StringVar()
+var1 = StringVar()
+
 # Funtion which makes the Assistant speak
 
 def speak(audio):
     engine.say(audio)
     engine.runAndWait()
 
+# Function to send Emails
 
-# Function to tell Time
-
-def time_():
-    Time=datetime.datetime.now().strftime("%I:%M:%S")
-    speak("Current time is..")
-    speak(Time)
-
-# Function to tell Date
-
-def date():
-    year=int(datetime.datetime.now().year)
-    month=int(datetime.datetime.now().month)
-    date=int(datetime.datetime.now().day)
-    speak("The current date is")
-    speak(date)
-    speak(month)
-    speak(year)
+def sendemail(to, content):
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.ehlo()
+    server.starttls()
+    server.login('email id', 'password')  # email id - use any email id whose security/privacy is off
+    server.sendmail('email id', to, content)
+    server.close()
 
 # Function for greetings
 
-def greeting():
-    hour=datetime.datetime.now().hour
-    if hour>=6 and hour<12:
+def wishme():
+    hour = int(datetime.datetime.now().hour)
+    if hour >= 0 and hour <= 12:
+        var.set("Good Morning Sir")
+        window.update()
         speak("Good Morning Sir")
-    if hour>=12 and hour<16:
+    elif hour >= 12 and hour <= 17:
+        var.set("Good Afternoon Sir")
+        window.update()
         speak("Good Afternoon Sir")
-    if hour>=16 and hour<=24:
+    else:
+        var.set("Good Evening Sir")
+        window.update()
         speak("Good Evening Sir")
-    speak("SOVIA at your service, How Can I help you")
+
+    var.set("SOVIA at your service, How Can I help you?")
+    window.update()    
+    speak("SOVIA at your service, How Can I help you?")  # BotName - Give a name to your assistant
 
 # Function to take commands form microphone
 
-def takecommand():
-    r=sr.Recognizer()
+def takeCommand():
+    r = sr.Recognizer()
     with sr.Microphone() as source:
+        var.set("Listening...")
+        window.update()
         print("Listening...")
-        r.pause_threshold=1
-        r.energy_threshold=4000
-        audio=r.listen(source)
+        r.pause_threshold = 1
+        r.energy_threshold = 4000
+        audio = r.listen(source)
     try:
-        print("Recognizing...")
-        query=r.recognize_google(audio)
-
+        var.set("Recognizing...")
+        window.update()
+        print("Recognizing")
+        query = r.recognize_google(audio, language='en-in')
     except Exception as e:
-        print(e)
-        # speak("Sorry I didn't get that can you please repeat")
         return "None"
+    var1.set(query)
+    window.update()
     return query
-
-# Function to send Emails
-
-# def sendmail():
-#     son=e.get()
-#     to = son
-#     # h = 'Mail form Sovia'
-#     # k = 'I am sovia'
-#     yag = yagmail.SMTP('so2116926@gmail.com', 'sovia@123')
-#     yag.send(to, subject, content)
 
 # function to take screenshot
 
 def screenshot():
     img=pyautogui.screenshot()
-    img.save("D:/Assistant/ss.png")
+    img.save("D:\Assistant\ss.png")
 
 # funtion to tell about CPU percentage
 
 def cpu():
     usage=str(psutil.cpu_percent())
+    var.set("CPU is at" + usage)
+    window.update()
     speak("CPU is at" + usage)
 
 # function to tell battery percentage
 def battery():
     battery=psutil.sensors_battery()
-    speak("battery is at")
+    var.set(battery.percent)
+    window.update()
     speak(battery.percent)
+    #var.set(battery.percent)
+    #window.update()
+    #speak(battery.percent)
+    #var.set("percent")
+    #window.update()
     speak("percent")
 
 # Function to tell joke
 
 def jokes():
+    var.set(pyjokes.get_joke())#here is the joke
+    window.update()
     speak(pyjokes.get_joke())
 
 # Function to tell news
@@ -129,12 +164,15 @@ def news():
     response = requests.get(url)
     t = response.text
     my_json = json.loads(t)
+    var.set("News for the day are")
+    window.update()
     speak("News for the day are")
     for i in range(0, 5):
         speak(my_json['articles'][i]['title'])
         speak("the description of above news is" + my_json['articles'][i]['description'])
 
 # Function to tell features
+
 def features():
     f=['Tell time','Tell date',
        'Tell a Joke','Tell a Current weather report and weather forecast for next day',
@@ -144,21 +182,15 @@ def features():
        'Play songs','Switch Songs','Remember things',
        'Tell what you told me to remember','Take Screenshots',
        'Tell about CPU status','Tell battery Percentage',
-       'Tell News','Open System application']
+       'Tell News','Open System application','show the three types of prediction-addmission, loan and spam email checker','cilck the photo',
+       'record the video']
     for i in f:
         print(i)
     for i in f:
+        var.set(i)
+        window.update()
         speak(i)
 
-#Function to answer questions
-def answer():
-    question =query
-    app_id = '7WP4V3-7T4GPQX6EQ'
-    client = wolframalpha.Client(app_id)
-    res = client.query(question)
-    answer = next(res.results).text
-    print(answer)
-    speak(answer)
 
 def forecast(City):
     city_api_endpoint = "http://api.openweathermap.org/data/2.5/forecast?q="
@@ -176,12 +208,16 @@ def forecast(City):
         text1 = str("Tommorrow's Temperature is " + str(forecast_temperature) + "degree celsius" +
                     "\n atmospheric pressure is" + str(forecast_pressure) + "hectopascal" + "humidity is "
                     + str(forecast_humidity) + "percent" + "with " + str(forecast_main))
+        var.set(text1)
+        window.update()
         speak(text1)
 
 def weather():
     api_key = "93654f3dc80dd40be139ca13704330c4"
     # base_url variable to store url
     base_url = "http://api.openweathermap.org/data/2.5/weather?"
+    var.set("Please tell me your current city")
+    window.update()
     speak("Please tell me your current city")
 
     # Give city name
@@ -224,84 +260,246 @@ def weather():
               str(current_humidiy) +"percent"+
               "with " +
               str(weather_description))
+        var.set(text)
+        window.update()
         speak(text)
+        var.set("Do you want to know weather forecast for tommorrow??")
+        window.update()
         speak("Do you want to know weather forecast for tommorrow??")
         cmd=takecommand().lower()
 
         if "yes" or "weather forecast" in cmd:
             City = city_name
             forecast(City)
-        elif "no" in cmd:
+        elif "no"or'9' in cmd:
+            var.set("ok")
+            window.update()
             speak("ok")
 
     else:
         print(" City Not Found ")
 
-if __name__ == '__main__':
-    greeting()
+
+def Jarvis():
+    #btn2['state'] = 'disabled'
+
+    btn1.configure(bg='orange')
+    wishme()
     while True:
-        query=takecommand().lower()
+        btn1.configure(bg='orange')
+        query = takeCommand().lower()
         print(query)
-        if "time" in query:
-            time_()
-        elif "date" in query:
-            date()
+        if 'exit' in query:
+            var.set("Bye Sir have a great day")
+            btn1.configure(bg='#5C85FB')
+            #btn2['state'] = 'normal'
+
+            window.update()
+            speak("Bye Sir have a great day")
+            break
         elif "offline" in query:
-            speak("ok Sir")
+            speak("ok Sir have a great day")
             quit()
-        elif "wikipedia" in query:
-            speak("Sure sir let me check..")
-            query=query.replace("wikipedia","")
-            result=wikipedia.summary(query,sentences=2)
-            speak(result)
+        elif 'wikipedia' in query:
+            if 'open wikipedia' in query:
+                webbrowser.open('wikipedia.com')
+            else:
+                try:
+                    #var.set("Sure sir let me check..")
+                    #window.update()
+                    speak("Sure sir let me check..")
+                    query = query.replace("according to wikipedia", "")
+                    results = wikipedia.summary(query, sentences=2)
+                    #var.set("Sure sir let me check..")
+                    #window.update()
+                    speak("According to wikipedia")
+                    var.set(results)
+                    window.update()
+                    speak(results)
+                except Exception as e:
+                    var.set("sorry sir  could not find any results")
+                    window.update()
+                    speak("sorry sir could not find any results")
+
+        elif 'open youtube' in query:
+            var.set('opening Youtube')
+            window.update()
+            speak('opening Youtube')
+            webbrowser.open("youtube.com")
+
+        elif 'open course era' in query:
+            var.set('opening course era')
+            window.update()
+            speak('opening course era')
+            webbrowser.open("coursera.com")
+
+        elif 'open google' in query:
+            var.set('opening google...')
+            window.update()
+            speak('opening google')
+            webbrowser.open("google.com")
+
+        elif 'hello' in query:
+            var.set("Hello sir")
+            window.update()
+            speak("Hello sir")
+
+        elif 'open stackoverflow' in query:
+            var.set('opening stackoverflow')
+            window.update()
+            speak('opening stackoverflow')
+            webbrowser.open('stackoverflow.com')
+
+        elif ('play music' in query):
+            var.set('Here are your favorites')
+            window.update()
+            speak('Here are your favorites')
+            music_dir = "D:/Music"  # Enter the Path of Music Library
+            songs = os.listdir(music_dir)
+            n = random.randint(0, 27)
+            os.startfile(os.path.join(music_dir, songs[n]))
+        
+        elif "play another song" in query:
+            var.set("Ok sir")
+            window.update()
+            speak("Ok sir")
+            music_dir = "D:/Music"  # Enter the Path of Music Library
+            songs = os.listdir(music_dir)
+            n = random.randint(0, 27)
+            os.startfile(os.path.join(music_dir, songs[n]))
+
+        elif 'the time' in query:
+            strtime = datetime.datetime.now().strftime("%H:%M:%S")
+            var.set("sir the time is %s" % strtime)
+            window.update()
+            speak("sir the time is %s" % strtime)
+
+        elif 'the date' in query:
+            strdate = datetime.datetime.today().strftime("%d %m %y")
+            var.set("sir today's date is %s" % strdate)
+            window.update()
+            speak("sir today's date is %s" % strdate)
+
+        elif 'thank you' in query:
+            var.set("Welcome sir")
+            window.update()
+            speak("Welcome sir")
+
+        elif 'can you do for me' in query:
+            var.set("I can do multiple tasks for you Ma'am. tell me whatever you want to perform sir")
+            window.update()
+            speak("I can do multiple tasks for you Ma'am. tell me whatever you want to perform sir")
+
+        elif 'your name' in query:
+            var.set("Myself Sovia Sir")
+            window.update()
+            speak("Myself Sovia Sir")
+
+        elif 'say hello' in query:
+            var.set('Hello Everyone! My self SOVIA')
+            window.update()
+            speak('Hello Everyone! My self SOVIA')
+
+        elif 'open pycharm' in query:
+            var.set("Opening Pycharm")
+            window.update()
+            speak("Opening Pycharm")
+            path = "C:\\Program Files\\JetBrains\\PyCharm Community Edition 2020.1.1\\bin\\pycharm64.exe"  # Enter the correct Path according to your system
+            os.startfile(path)
+
+        elif 'open chrome' in query:
+            var.set("Opening Google Chrome")
+            window.update()
+            speak("Opening Google Chrome")
+            path = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"  # Enter the correct Path according to your system
+            os.startfile(path)
+
+        elif 'admission' in query:
+            var.set('opening the Addmission Prediction')
+            window.update()
+            speak('opening the Addmission Prediction')
+            webbrowser.open("https://the-predictor-mic.herokuapp.com/admission/")
+
+        elif 'loan' in query:
+            var.set('opening the Loan Prediction')
+            window.update()
+            speak('opening the Loan Prediction')
+            webbrowser.open("https://the-predictor-mic.herokuapp.com/loan/")
+
+        elif 'spam' in query:
+            var.set('open the Spam Email Checker')
+            window.update()
+            speak('opening the Spam Email Checker')
+            webbrowser.open("https://the-predictor-mic.herokuapp.com/spam/")
+
+
         elif 'email' in query:
             try:
-                speak("What is the topic of mail")
-                subject=takecommand()
-                speak("What should I say")
-                content=takecommand()
-                # speak("Please enter the receiver's email address")
+                var.set("Please enter the recevers address")
+                window.update()
+                speak("Please enter the recevers address")
+                def send_mail():
+                    son=e.get()
+                    import yagmail
+                    to = son
+                    var.set("what is the subject of the mail")
+                    window.update()
+                    speak("what is the subject of the mail")
+                    h = takecommand()
+                    var.set("what should I say...")
+                    window.update()
+                    speak("what should I say...")
+                    k = takecommand()
+                    yag = yagmail.SMTP('so2116926@gmail.com', 'sovia@123')
+                    yag.send(to, h, k)
+                    speak("Email sent successfully")
+                
                 master = tk.Tk()
-                tk.Label(master, text="Email Address").grid(row=0)
-                e = tk.Entry(master)
-                e.grid(row=0, column=1)
-                tk.Button(master, text="Enter", command=sendmail).grid(row=3, column=0, sticky=tk.W, pady=4)
+                tk.Label(master, text="Email Address").grid(row=2,pady=5)
+                e = tk.Entry(master,width=35)
+                e.grid(row=2, column=1,pady=5)
+                tk.Button(master, text="Enter", command=send_mail).grid(row=3, column=1, sticky=tk.W, pady=4)
+                master.geometry("280x200+0+0")
                 tk.mainloop()
-                sendmail(to,subject,content)
-                speak("Email sent successfully")
+                #send_mail(to,subject,content)
+                #var.set("Email sent successfully")
+                #window.update()
             except Exception as e:
                 print(e)
-                speak("Unable to send the email")
+                var.set("Sorry Sir! I was not able to send this email")
+                window.update()
+                speak('Sorry Sir! I was not able to send this email')
+        
         elif 'search' in query:
+
+            var.set("What should I search for")
+            window.update()
             speak("What should I search for")
             chromepath="C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s"
             search=takecommand().lower()
-            wb.get(chromepath).open_new_tab(search+".com")
+            webbrowser.get(chromepath).open_new_tab(search+".com")
         elif 'logout' in query:
             os.system("shutdown - l")  #for logout
         elif 'shutdown' in query:
             os.system("shutdown /s /t 1")  #for shutdown
         elif 'restart' in query:
             os.system("shutdown /r /t 1")  #for restart
-        # to play song
-        elif "play song" in query:
-            songs_dir="D:/Music"
-            songs=os.listdir(songs_dir)
-            n=random.randint(0,len(songs))
-            os.startfile(os.path.join(songs_dir,songs[n]))
-        # to switch songs
-        elif "play another song" in query:
-            speak("Ok sir")
-            songs_dir="D:/Music"
-            songs=os.listdir(songs_dir)
-            n=random.randint(0,len(songs))
-            os.startfile(os.path.join(songs_dir,songs[n]))
 
+        elif "open python" in query:
+            var.set("Opening Python IdlE")
+            window.update()
+            speak('opening python IdlE')
+            os.startfile('C:\\Users\\user\\python37\\python.exe')  # Enter the correct Path according to your system
+        
         # to make assistant to remember something
 
         elif "remember that" in query:
+            var.set("What should I remember")
+            window.update()
             speak("What should I remember")
             data=takecommand()
+            var.set("you said me to remember" + data)
+            window.update()
             speak("you said me to remember" + data)
             remember=open("data.txt","w")
             remember.write(data)
@@ -311,9 +509,13 @@ if __name__ == '__main__':
 
         elif 'what i told you to remember' in query:
             remember=open("data.txt","r")
+            var.set("you said me to remember that" + remember.read())
+            window.update()
             speak("you said me to remember that" + remember.read())
         elif 'screenshot' in query:
             screenshot()
+            var.set("Screenshot taken")
+            window.update()
             speak("Screenshot taken")
 
         elif 'cpu' in query:
@@ -324,57 +526,104 @@ if __name__ == '__main__':
             jokes()
         elif 'news' in query:
             news()
-        # to open Visual Studio code
-        elif 'open code' in query:
-            speak("opening Visual Studio Code")
-            codePath="C:\\Users\\NAYAN\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe" #write app's target here
-            os.startfile(codePath)
 
-        # to open Pycharm
-
-        elif 'pycharm' in query:
-            speak("opening Pycharm")
-            codePath="C:\\Program Files\\JetBrains\PyCharm Community Edition 2020.1.3\\bin\\pycharm64.exe" #write app's target here
-            os.startfile(codePath)
         # to open system apps
+
         elif 'wordpad' in query:
+            var.set("Opening Wordpad")
+            window.update()
             speak("Opening Wordpad")
             subprocess.Popen('C:\\Windows\\System32\\write.exe')
         elif 'notepad' in query:
+            var.set("Opening notepad")
+            window.update()
             speak("Opening notepad")
             subprocess.Popen('C:\\Windows\\System32\\notepad.exe')
         elif 'calculator' in query:
+            var.set("Opening calculator")
+            window.update()
             speak("Opening calculator")
             subprocess.Popen('C:\\Windows\\System32\\calc.exe')
         elif 'word' in query:
+            var.set("Opening word")
+            window.update()
             speak("Opening word")
             subprocess.Popen("C:\\Program Files\\Microsoft Office\\root\\Office16\\WINWORD.EXE")
         elif 'powerpoint' in query:
+            var.set("Opening powerpoint")
+            window.update()
             speak("Opening powerpoint")
             subprocess.Popen("C:\\Program Files\\Microsoft Office\\root\\Office16\\POWERPNT.EXE")
         elif 'excel' in query:
+            var.set("Opening excel")
+            window.update()
             speak("Opening excel")
             subprocess.Popen("C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE")
         elif 'photoshop' in query:
+            var.set("Opening photoshop")
+            window.update()
             speak("Opening photoshop")
             subprocess.Popen("C:\\Program Files (x86)\\Adobe\\Photoshop 7.0\\Photoshop.exe")
         elif 'paint' in query: 
+            var.set("Opening Paint")
+            window.update()
             speak("Opening Paint")
             subprocess.Popen("C:\\Windows\\System32\\mspaint.exe")
-        elif 'what can you do' in query:
+        elif 'your feature' in query:
+            var.set("I can...")
+            window.update()
             speak("I can...")
             features()
         elif 'what' in query:
-            answer()
+            # answer()
+            question =query
+            app_id = '7WP4V3-7T4GPQX6EQ'
+            client = wolframalpha.Client(app_id)
+            res = client.query(question)
+            answer = next(res.results).text
+            print(answer)
+            var.set(answer)
+            window.update()
+            speak(answer)
         elif 'weather' in query:
             weather()
+        
+
+
+        elif 'click photo' in query:
+            stream = cv2.VideoCapture(0)
+            grabbed, frame = stream.read()
+            if grabbed:
+                cv2.imshow('pic', frame)
+                cv2.imwrite('pic.jpg', frame)
+            stream.release()
+
+        elif 'record video' in query:
+            cap = cv2.VideoCapture(0)
+            out = cv2.VideoWriter('output.avi', -1, 20.0, (640, 480))
+            while (cap.isOpened()):
+                ret, frame = cap.read()
+                if ret:
+
+                    out.write(frame)
+
+                    cv2.imshow('frame', frame)
+                    if cv2.waitKey(1) & 0xFF == ord('q'):
+                        break
+                else:
+                    break
+            cap.release()
+            out.release()
+            cv2.destroyAllWindows()
+
         elif 'game' in query:
             
-            speak("You can play three types of game that is key operated games...in which I have snake game, voice based games....in which I have Chess... and motion based games....in which I have Dinosaur Game. So, which one you would like to play..first..Second or third ")
+            speak("You can play three types of game that is key operated games...in which I have snake game, voice based games....in which I have Chess... and motion based games....in which I have Dinosaur Game. So, which one you would like to play..One....Two or Three ")
             query=takecommand().lower()
+
 #snake Game
 #-------------------------------------------------------
-            if 'first' in qry:
+            if 'One' or '1'  in query:
                 speak("Do you want to play snake game")
                 inp=takecommand().lower()
                 if 'yes' in inp:
@@ -390,21 +639,21 @@ if __name__ == '__main__':
 #*************************************************************************************************************************************#
 
 
-            if 'two' or '2' in qry:
+            if 'Two' or '2' in query:
                 speak("Do you want to play chess")
                 inp=takecommand().lower()
                 if 'yes' in inp:
                     #Import dependencies:
-                    import pygame #Game library
-                    from pygame.locals import * #For useful variables..for eg QUIT
-                    import copy #Library used to make exact copies of lists.
-                    import pickle #Library used to store dictionaries in a text file and read them from text files.
-                    import random #Used for making random selections
-                    from collections import defaultdict #Used for giving dictionary values default data types.
-                    from collections import Counter #For counting elements in a list effieciently.
-                    import threading #To allow for AI to think simultaneously while the GUI is coloring the board.
-                    import time
-                    import speech_recognition as sr
+                    # import pygame #Game library
+                    # from pygame.locals import * #For useful variables..for eg QUIT
+                    # import copy #Library used to make exact copies of lists.
+                    # import pickle #Library used to store dictionaries in a text file and read them from text files.
+                    # import random #Used for making random selections
+                    # from collections import defaultdict #Used for giving dictionary values default data types.
+                    # from collections import Counter #For counting elements in a list effieciently.
+                    # import threading #To allow for AI to think simultaneously while the GUI is coloring the board.
+                    # import time
+                    # import speech_recognition as sr
 
                     play_sound=True
 
@@ -2503,18 +2752,18 @@ if __name__ == '__main__':
 #*************************************************************************************************************************************#
 
 # Dinosaur Game
-            if 'third' in qry:
+            if 'Three' or '3' in query:
                 speak("Do you want to play Dinosaur game")
                 inp=takecommand().lower()
                 if 'yes' in inp:
 
-                    import cv2
-                    import numpy as np
-                    import joblib
-                    import pygame
-                    from sys import exit
-                    from random import randrange, choice
-                    import os
+                    # import cv2
+                    # import numpy as np
+                    # import joblib
+                    # import pygame
+                    # from sys import exit
+                    # from random import randrange, choice
+                    # import os
 
                     jump_model = joblib.load('jump_model.pkl')
                     msg = ''
@@ -2866,4 +3115,77 @@ if __name__ == '__main__':
                     speak(results)
 
             except:
-                speak("Tell me ")
+                speak("Sorry I din't get that can you please repeat!!")
+
+
+#################### window update fun#############
+def update(ind):
+    frame = frames[(ind) % 100]
+    ind += 1
+    label.configure(image=frame)
+    window.after(100, update, ind)
+
+
+########### background logo############
+import tkinter as tk, threading
+import imageio
+from PIL import Image, ImageTk
+
+
+
+video_name = "Logo.wmv" #This is your video file path
+video = imageio.get_reader(video_name,size=(860,500))
+
+
+def stream(label):
+
+    for image in video.iter_data():
+        frame_image = ImageTk.PhotoImage(Image.fromarray(image))
+        #frame_image.place(x=1,y=1,width=500,height=500)
+        label.config(image=frame_image)
+        label.image = frame_image
+
+if __name__ == "__main__":
+
+
+    window.title("S.O.V.I.A.")
+    window.iconbitmap(r'Aicon.ico')
+    my_label = tk.Label(window)
+    window.geometry("1300x800")
+    window['background']= '#ccecff'
+    my_label.pack()
+    thread = threading.Thread(target=stream, args=(my_label,))
+    thread.daemon = 1
+    thread.start()
+
+######################### main gui#######################
+
+    label2 = Label(window, textvariable=var1, bg='#FAB60C', width=87)
+    label2.config(font=("Gotham", 15))
+    var1.set('Hi I am SOVIA')
+    label2.pack()
+    label2.place(x=0,y=500)
+
+
+    label1 = Label(window, textvariable=var, bg='#ADD8E6',width=87)
+    label1.config(font=("Gotham", 15))
+    var.set('WELCOME')
+    label1.pack()
+    label1.place(x=0,y=550)
+
+    #label = Label(window, width=500, height=500)
+    #label.pack()
+    window.after(0, update, 0)
+    
+
+    btn1 = Button(text='PLAY', width=16, command=Jarvis, bg='#5C85FB')
+    btn1.config(font=("Courier", 12))
+    btn1.pack()
+    btn1.place(x=525,y=750)
+
+    # btn2 = Button(text='EXIT', width=16, command=window.destroy, bg='#5C85FB')
+    # btn2.config(font=("Courier", 12))
+    # btn2.pack()
+    # btn1.place(x=560,y=550)
+
+window.mainloop()
