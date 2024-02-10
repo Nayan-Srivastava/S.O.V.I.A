@@ -450,7 +450,7 @@ def Jarvis():
                     window.update()
                     speak("what should I say...")
                     k = takecommand()
-                    yag = yagmail.SMTP('so2116926@gmail.com', 'sovia@123')
+                    yag = yagmail.SMTP('<<email>>', '<<password>>')
                     yag.send(to, h, k)
                     speak("Email sent successfully")
                 
