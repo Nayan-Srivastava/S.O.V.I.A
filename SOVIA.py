@@ -93,7 +93,7 @@ def takecommand():
 #     to = son
 #     # h = 'Mail form Sovia'
 #     # k = 'I am sovia'
-#     yag = yagmail.SMTP('so2116926@gmail.com', 'sovia@123')
+#     yag = yagmail.SMTP('<<email>>', '<<password>>')
 #     yag.send(to, subject, content)
 
 # function to take screenshot
